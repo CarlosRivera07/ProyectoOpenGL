@@ -3,7 +3,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import numpy as np
 
-#-----------------HERRAMIENTAS DE DIBUJO----------------------------#
+#-----------------------HERRAMIENTAS DE DIBUJO------------------------#
 def polygon(xc,yc,R,n, red,green, blue):
     angle = 2*3.141592/n
     glColor3f(red,green,blue)
