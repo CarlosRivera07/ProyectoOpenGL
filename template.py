@@ -6,6 +6,11 @@ from OpenGL.GLU import *
 from modules.draw import*
 from modules.transforms import *
 
+
+#---------------------IMPORTACIONES------------------------#
+
+from bloque import *
+
 #---------------------VARIABLES GLOBALES------------------------#
 
 w = 500
@@ -20,7 +25,7 @@ y1 = -0.9
 x2 = 0.15
 y2 = -0.85
 largo = 0.3
-velocidad = 0.003
+velocidad = 0.002
 
 flag_left = False
 flag_right = False
@@ -69,18 +74,14 @@ def reshape(width, height):
     glMatrixMode ( GL_MODELVIEW )
     glLoadIdentity()
 
-#def rectangulos():
-    #print("aqui van los rectangulos")
 
-
+    
+    
 def display():
     global x1, x2, y1, y2
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
     #glMatrixMode ( GL_MODELVIEW )
     #glLoadIdentity()
-
-
-
 
     #---------------------DIBUJAR AQUI------------------------#
     #glRectf(-0.8, -0.8, 0.5, 0.5)
@@ -92,9 +93,50 @@ def display():
     
     glColor3f(1,1,1) #Colores del rectangulo
     glRectf(x1,y1,x2,y2) #Coordenadas del rectangulo
-
+    
     #Resto de rectangulos
-    #rectangulos()
+    #Fila 1
+    bloqueF1_1()
+    bloqueF1_2()
+    bloqueF1_3()
+    bloqueF1_4()
+    bloqueF1_5()
+    #Fila 2
+    bloqueF2_1()
+    bloqueF2_2()
+    bloqueF2_3()
+    bloqueF2_4()
+    bloqueF2_5()
+    #Fila 3
+    bloqueF3_1()
+    bloqueF3_2()
+    bloqueF3_3()
+    bloqueF3_4()
+    bloqueF3_5()
+    #Fila 4
+    bloqueF4_1()
+    bloqueF4_2()
+    bloqueF4_3()
+    bloqueF4_4()
+    bloqueF4_5()
+    #Fila 5
+    bloqueF5_1()
+    bloqueF5_2()
+    bloqueF5_3()
+    bloqueF5_4()
+    bloqueF5_5()
+    #Fila 6
+    bloqueF6_1()
+    bloqueF6_2()
+    bloqueF6_3()
+    bloqueF6_4()
+    bloqueF6_5()
+    #Fila 7
+    bloqueF7_1()
+    bloqueF7_2()
+    bloqueF7_3()
+    bloqueF7_4()
+    bloqueF7_5()
     #---------------------------------------------------------#
 
     glFlush()
