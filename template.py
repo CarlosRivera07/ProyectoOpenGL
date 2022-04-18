@@ -4,26 +4,35 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from modules.draw import*
+from modules.gameobject import GameObject
+from modules.textures import loadTexture
 from modules.transforms import *
 
 
 #---------------------IMPORTACIONES------------------------#
 
 from bloque import *
-
+import random
 #---------------------VARIABLES GLOBALES------------------------#
 
 w = 500
 h = 650
 
-xc_circle = 250
-yc_circle = 250
-radius = 25
+#DECLARACION DE TEXTURAS
+texture_canasta = []
+
+
+#Elementos de la canasta
+
+radius = 0.015
+xc_circle = 0
+yc_circle = -0.8 - (radius*2)
 
 x1 = -0.15
 y1 = -0.9
 x2 = 0.15
 y2 = -0.85
+ancho = 0.05
 largo = 0.3
 velocidad = 0.002
 
@@ -74,72 +83,73 @@ def reshape(width, height):
     glMatrixMode ( GL_MODELVIEW )
     glLoadIdentity()
 
+def polygon(xc,yc,R,n,c1,c2,c3):
+    angle = 2*3.141592/n
+    glColor3f(c1,c2,c3)
+    glBegin(GL_POLYGON)
+    for i in range(n):
+        x = xc + R*np.cos(angle*i)
+        y = yc + R*np.sin(angle*i)
+        glVertex2d(x,y)
+    glEnd()
 
-    
-    
+    #DIBUJAR CANASTA
+def draw_canasta():
+    global x1,x2,y1,y2,ancho,largo,texture_canasta
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture_canasta[0])
+    glBegin(GL_POLYGON)
+    glTexCoord2f(0,0)
+    glVertex2d(x1,y1)
+    glTexCoord2f(0,1)
+    glVertex2d(x1,y2)
+    glTexCoord2f(1,1)
+    glVertex2d(x2,y2)
+    glTexCoord2f(1,0)
+    glVertex2d(x2,y1)
+    glEnd()
+
+    #DIBUJAR FIGURAS
+def draw_figura(xc,yc,R,n,c1,c2,c3):
+    angle = 2*3.141592/n
+    glColor3f(c1,c2,c3)
+    glBegin(GL_POLYGON)
+    for i in range(n):
+        x = xc + R*np.cos(angle*i)
+        y = yc + R*np.sin(angle*i)
+        glVertex2d(x,y)
+    glEnd()
+
 def display():
     global x1, x2, y1, y2
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
-    #glMatrixMode ( GL_MODELVIEW )
-    #glLoadIdentity()
+    glMatrixMode ( GL_MODELVIEW )
+    glLoadIdentity()
 
     #---------------------DIBUJAR AQUI------------------------#
-    #glRectf(-0.8, -0.8, 0.5, 0.5)
+     
+    vive = 1
+
+    while vive==1:
+        coord_aparicion = (float)(random.randint(-1, 1))
+        #llamar a la funcion de crear objeto enviandole la coordenada de X (coordenada Y siempre es -1)
+        draw_figura(coord_aparicion,-1,0.1,32,1,1,1)
+        vive = 0
+    
 
             # ANCHO = 500  ALTO = 650
             # ALTO = 650
 
-    #Rectangulo principal
+    #BARRA DE REBOTE
     
-    glColor3f(1,1,1) #Colores del rectangulo
-    glRectf(x1,y1,x2,y2) #Coordenadas del rectangulo
-    
-    #Resto de rectangulos
-    #Fila 1
-    bloqueF1_1()
-    bloqueF1_2()
-    bloqueF1_3()
-    bloqueF1_4()
-    bloqueF1_5()
-    #Fila 2
-    bloqueF2_1()
-    bloqueF2_2()
-    bloqueF2_3()
-    bloqueF2_4()
-    bloqueF2_5()
-    #Fila 3
-    bloqueF3_1()
-    bloqueF3_2()
-    bloqueF3_3()
-    bloqueF3_4()
-    bloqueF3_5()
-    #Fila 4
-    bloqueF4_1()
-    bloqueF4_2()
-    bloqueF4_3()
-    bloqueF4_4()
-    bloqueF4_5()
-    #Fila 5
-    bloqueF5_1()
-    bloqueF5_2()
-    bloqueF5_3()
-    bloqueF5_4()
-    bloqueF5_5()
-    #Fila 6
-    bloqueF6_1()
-    bloqueF6_2()
-    bloqueF6_3()
-    bloqueF6_4()
-    bloqueF6_5()
-    #Fila 7
-    bloqueF7_1()
-    bloqueF7_2()
-    bloqueF7_3()
-    bloqueF7_4()
-    bloqueF7_5()
+    #glColor3f(1,1,1) #Colores del rectangulo
+    #glRectf(x1,y1,x2,y2) #Coordenadas del rectangulo
+
+    draw_canasta()
+
     #---------------------------------------------------------#
 
-    glFlush()
+    
     glutSwapBuffers()
 
 def animate():
@@ -195,7 +205,7 @@ def animate():
 
 
 def main():
-    global w,h
+    global w,h, texture_canasta, largo, ancho 
     glutInit (  )
     glutInitDisplayMode ( GLUT_RGBA )
     glutInitWindowSize ( w, h )
@@ -208,7 +218,12 @@ def main():
     glutKeyboardFunc( keyPressed )
     glutKeyboardUpFunc(keyUp)
     init()
+
+    #CARGAR TEXTURAS
     
+    texture_canasta.append([loadTexture('Resources/canasta.png')])
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, largo, ancho, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_canasta)
+
     glutMainLoop()
 
 print("Presiona Escape para cerrar.")
