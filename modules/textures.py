@@ -1,5 +1,4 @@
 from math import pi
-from tkinter import Image
 import numpy as np
 from OpenGL.GL import *
 from OpenGL.GLUT import *
