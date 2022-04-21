@@ -9,20 +9,21 @@ from modules.gameobject import GameObject
 import random
 #from playsound import playsound #Instalar con pip install playsound==1.2.2
 from threading import Thread
-from movimientoObj import *
+from movimientoObj import objetoCae
 
 
 #--------------------DECLARACION DE VARIABLES GLOBALES------------------------#
 
 w,h= 500,750
 
-vidas = 1
+vidas = 3
 
 #Texturas
 texture_fondo = []
 texture_canasta = []
 texture_balon = []
 counter_elements = 0
+balones = []
 
 #ELEMENTOS DE LA CANASTA
 canasta_gameobject = GameObject()
@@ -75,7 +76,24 @@ def draw_canasta():
     glEnd()
 
 #BALON
-
+def draw_balones():
+    global balones
+    for i in range(len(balones)):
+        balon_gameobject = balones[i]
+        x,y = balon_gameobject.get_position()
+        w,h = balon_gameobject.get_size()
+        pin_x_start, pin_x_end = (0,1)
+        glBindTexture(GL_TEXTURE_2D, texture_balon[0])
+        glBegin(GL_POLYGON)
+        glTexCoord2f(pin_x_start,0)
+        glVertex2d(x,y)
+        glTexCoord2f(pin_x_end,0)
+        glVertex2d(x+w,y)
+        glTexCoord2f(pin_x_end,1)
+        glVertex2d(x+w,y+h)
+        glTexCoord2f(pin_x_start,1)
+        glVertex2d(x,y+h)
+        glEnd()
 
 #----------------------------------------------------------------------#
 
@@ -101,10 +119,14 @@ def keyUp(key, x, y):
 
 
 def init():
-    glClearColor ( 0.5725, 0.5647, 1.0, 0.0 )
+    #glClearColor ( 0.5725, 0.5647, 1.0, 0.0 )
     glEnable(GL_TEXTURE_2D)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+def init2():
+    glClearColor ( 1.0, 0.0, 0.0, 0.0 )
+
 
 def reshape(width, height):
     global w, h
@@ -118,29 +140,24 @@ def reshape(width, height):
     glLoadIdentity()
 
 def display():
+    global vidas
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
     glMatrixMode ( GL_MODELVIEW )
     glLoadIdentity()
 
-    #----------------------------DIBUJAR AQUI---------------------------------#
+#----------------------------DIBUJAR AQUI---------------------------------#
     
     #DIBUJO DE LAS TEXTURAS
     draw_fondo()
     draw_canasta()
+    draw_balones()
 
-    coord_aparicion = 0.0
-    while vidas == 1:
-        nueva_coord =  (float)(random.randint(-1, 1))
-        if(nueva_coord > coord_aparicion+0.1 or nueva_coord < coord_aparicion-0.1 or coord_aparicion == 0.0):
-            coord_aparicion = nueva_coord
-            objetoCae(coord_aparicion)
-            
 
-    
-    
-    #----------------------------------------------------------------------------#
+#----------------------------------------------------------------------------#
 
     glutSwapBuffers()
+
+
 
 def animate():
     temp = 0
@@ -165,9 +182,26 @@ def timer_move_canasta(value):
 
 def timer_animate_canasta(value):
     global canasta_gameobject
-    canasta_gameobject.animate()
     glutPostRedisplay()
     glutTimerFunc(100, timer_animate_canasta,1)
+
+def timer_animate_balon(id_balon):
+    global balones
+    for i in range(len(balones)):
+        if balones[i].get_id() == id_balon:
+            #balones[i].animate()
+            glutPostRedisplay()
+            glutTimerFunc(200, timer_animate_balon, id_balon)
+
+def timer_create_balon(value):
+    global balones, texture_balon, counter_elements
+    id_balon = counter_elements
+    balon = GameObject(id_balon,(float)(random.randint(0, 460)),650,40,40, texture_balon)
+    counter_elements += 1
+    balones.append(balon)
+    #glutPostRedisplay()
+    timer_animate_balon(id_balon)
+    glutTimerFunc(1000, timer_create_balon, 1)
 
 #--------------------------------------------------------------------------------#
 
@@ -194,7 +228,7 @@ def main():
     counter_elements += 1
 
     #Balon
-    texture_balon.append(loadTexture(''))
+    texture_balon.append(loadTexture('Resources/balon.png'))
 
     #Elementos del Fondo
     texture_fondo.append(loadTexture('Resources/fondo.png'))
@@ -202,6 +236,7 @@ def main():
 
     timer_move_canasta(0)
     timer_animate_canasta(0)
+    timer_create_balon(0)
 
     glutMainLoop()
 
