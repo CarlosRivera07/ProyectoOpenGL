@@ -22,8 +22,10 @@ vidas = 3
 texture_fondo = []
 texture_canasta = []
 texture_balon = []
+texture_bomba = []
 counter_elements = 0
 balones = []
+bombas = []
 
 #ELEMENTOS DE LA CANASTA
 canasta_gameobject = GameObject()
@@ -95,6 +97,25 @@ def draw_balones():
         glVertex2d(x,y+h)
         glEnd()
 
+def draw_bomba():
+    global texture_bomba, bombas
+    for i in range(len(bombas)):
+        bomba_gameobject = bombas[i]
+        x,y = bomba_gameobject.get_position()
+        w,h = bomba_gameobject.get_size()
+        pin_x_start, pin_x_end = (0,1)
+        glBindTexture(GL_TEXTURE_2D, texture_bomba[0])
+        glBegin(GL_POLYGON)
+        glTexCoord2f(pin_x_start,0)
+        glVertex2d(x,y)
+        glTexCoord2f(pin_x_end,0)
+        glVertex2d(x+w,y)
+        glTexCoord2f(pin_x_end,1)
+        glVertex2d(x+w,y+h)
+        glTexCoord2f(pin_x_start,1)
+        glVertex2d(x,y+h)
+        glEnd()
+
 #----------------------------------------------------------------------#
 
 #---------------------EVENTOS DEL TECLADO------------------------------#
@@ -151,12 +172,11 @@ def display():
     draw_fondo()
     draw_canasta()
     draw_balones()
-
-
-#----------------------------------------------------------------------------#
+    draw_bomba()
 
     glutSwapBuffers()
 
+#----------------------------------------------------------------------------#
 
 
 def animate():
@@ -201,7 +221,25 @@ def timer_create_balon(value):
     balones.append(balon)
     #glutPostRedisplay()
     timer_animate_balon(id_balon)
-    glutTimerFunc(1000, timer_create_balon, 1)
+    glutTimerFunc(1500, timer_create_balon, 1)
+
+
+def timer_animate_bombas(id_bomba):
+    global bombas
+    for i in range(len(bombas)):
+        if bombas[i].get_id() == id_bomba:
+            glutPostRedisplay()
+            glutTimerFunc(200, timer_animate_bombas, id_bomba)
+
+def timer_create_bombas(value):
+    global bombas, texture_bomba, counter_elements
+    id_bomba = counter_elements
+    bomba = GameObject(id_bomba,(float)(random.randint(0, 460)),650,40,40, texture_bomba)
+    counter_elements += 1
+    bombas.append(bomba)
+    #glutPostRedisplay()
+    timer_animate_bombas(id_bomba)
+    glutTimerFunc(3000, timer_create_bombas, 1)
 
 #--------------------------------------------------------------------------------#
 
@@ -230,6 +268,9 @@ def main():
     #Balon
     texture_balon.append(loadTexture('Resources/balon.png'))
 
+    #Bomba
+    texture_bomba.append(loadTexture('Resources/bomba.png'))
+
     #Elementos del Fondo
     texture_fondo.append(loadTexture('Resources/fondo.png'))
 
@@ -237,6 +278,7 @@ def main():
     timer_move_canasta(0)
     timer_animate_canasta(0)
     timer_create_balon(0)
+    timer_create_bombas(0)
 
     glutMainLoop()
 
