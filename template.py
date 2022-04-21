@@ -1,86 +1,113 @@
-import threading
-#from turtle import width
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
-from modules.draw import*
-from modules.gameobject import GameObject
-from modules.textures import loadTexture
-#from modules.bezier import evaluate_bezier
+from modules.draw import *
 from modules.transforms import *
+from modules.textures import loadTexture
+from modules.bezier import evaluate_bezier
+from modules.gameobject import GameObject
 import random
+#from playsound import playsound #Instalar con pip install playsound==1.2.2
 from threading import Thread
+from movimientoObj import *
 
 
+#--------------------DECLARACION DE VARIABLES GLOBALES------------------------#
 
-#---------------------IMPORTACIONES------------------------#
+w,h= 500,750
 
-#from movimientoObj import *
-import random
-#---------------------VARIABLES GLOBALES------------------------#
+vidas = 1
 
-w = 500
-h = 650
+#Texturas
+texture_fondo = []
+texture_canasta = []
+texture_balon = []
+counter_elements = 0
 
-#DECLARACION DE TEXTURAS
-texture_logo = []
+#ELEMENTOS DE LA CANASTA
+canasta_gameobject = GameObject()
 
-
-radius = 0.015
-xc_circle = 0
-yc_circle = -0.8 - (radius*2)
-
-x1 = -0.15
-y1 = -0.9
-x2 = 0.15
-y2 = -0.85
-ancho = 0.05
-largo = 0.3
-velocidad = 0.002
-
+#Movimiento
 flag_left = False
 flag_right = False
-flag_up = False
-flag_down = False
 
-input = 0
+#--------------------------------------------------------------------------#
 
-#---------------------FUNCIONES DEL TECLADO------------------------#
 
-def keyPressed ( key, x, y ):
-    global flag_left, flag_right, flag_up, flag_down
+
+#-----------------------------DIBUJOS TEXTURAS-----------------------------#
+#FONDO
+def draw_fondo():
+    global texture_fondo
+
+    x_coord = 0
+    y_coord = 0
+    width = 500
+    height = 650
+    glBindTexture(GL_TEXTURE_2D, texture_fondo[0])
+    glBegin(GL_POLYGON)
+    glTexCoord2f(0,0)
+    glVertex2d(x_coord,y_coord)
+    glTexCoord2f(1,0)
+    glVertex2d(x_coord + width,y_coord)
+    glTexCoord2f(1,1)
+    glVertex2d(x_coord + width,y_coord + height)
+    glTexCoord2f(0,1)
+    glVertex2d(x_coord,y_coord + height)
+    glEnd()
+
+#CANASTA
+def draw_canasta():
+    global canasta_gameobject
+    x,y = canasta_gameobject.get_position()
+    w,h = canasta_gameobject.get_size()
+    pin_x_start, pin_x_end = (1,0) if canasta_gameobject.is_mirrored() else (0,1)
+    glBindTexture(GL_TEXTURE_2D, canasta_gameobject.get_frame_to_draw())
+    glBegin(GL_POLYGON)
+    glTexCoord2f(pin_x_start,0)
+    glVertex2d(x,y)
+    glTexCoord2f(pin_x_end,0)
+    glVertex2d(x+w,y)
+    glTexCoord2f(pin_x_end,1)
+    glVertex2d(x+w,y+h)
+    glTexCoord2f(pin_x_start,1)
+    glVertex2d(x,y+h)
+    glEnd()
+
+#BALON
+
+
+#----------------------------------------------------------------------#
+
+#---------------------EVENTOS DEL TECLADO------------------------------#
+
+def keyPressed ( key, x, y):
+    global flag_left, flag_right
     if key == b'\x1b':
         glutLeaveMainLoop()
-    if key == b'w':
-        flag_up = True
-    if key == b's':
-        flag_down = True
-    if key == b'a':
+    if key == b'a' or key == b'A':
         flag_left = True
-    if key == b'd':
+    if key == b'd' or key == b'D':
         flag_right = True
 
 def keyUp(key, x, y):
-    global flag_left, flag_right, flag_up, flag_down
-    if key == b'w' :
-        flag_up = False
-    if key == b's':
-        flag_down = False
-    if key == b'a':
+    global flag_left, flag_right
+    if key == b'a' or key == b'A':
         flag_left = False
-    if key == b'd':
+    if key == b'd' or key == b'D':
         flag_right = False
 
-#---------------------------------------------------------#
+#---------------------------------------------------------------------------#
+
 
 def init():
-    glClearColor ( 0.0, 0.0, 0.0, 0.0 )
+    glClearColor ( 0.5725, 0.5647, 1.0, 0.0 )
     glEnable(GL_TEXTURE_2D)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 def reshape(width, height):
-    global w,h
+    global w, h
     glViewport ( 0, 0, width, height )
     glMatrixMode ( GL_PROJECTION )
     glLoadIdentity()
@@ -90,130 +117,91 @@ def reshape(width, height):
     glMatrixMode ( GL_MODELVIEW )
     glLoadIdentity()
 
-#DIBUJAR CIRCULO
-def polygon(xc,yc,R,n,c1,c2,c3):
-    angle = 2*3.141592/n
-    glColor3f(c1,c2,c3)
-    glBegin(GL_POLYGON)
-    for i in range(n):
-        x = xc + R*np.cos(angle*i)
-        y = yc + R*np.sin(angle*i)
-        glVertex2d(x,y)
-    glEnd()
-
-    #DIBUJAR TEXTURA DE LA CANASTA
-def draw_logo():
-    global texture_logo
-    x_coord = -0.1
-    y_coord = -0.1
-    widthv = 0.2
-    heightv = 0.2
-    glBindTexture(GL_TEXTURE_2D, texture_logo[0])
-    glBegin(GL_POLYGON)
-    glTexCoord2f(0,0)
-    glVertex2d(x_coord,y_coord)
-    glTexCoord2f(1,0)
-    glVertex2d(x_coord + widthv,y_coord)
-    glTexCoord2f(1,1)
-    glVertex2d(x_coord + widthv,y_coord + heightv)
-    glTexCoord2f(0,1)
-    glVertex2d(x_coord,y_coord + heightv)
-    glEnd()
-
 def display():
-    global x1, x2, y1, y2
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
     glMatrixMode ( GL_MODELVIEW )
     glLoadIdentity()
 
-    #---------------------DIBUJAR AQUI------------------------#
-     
-
-    #FONDO DEGRADADO
-    glBegin(GL_QUADS)
-    glColor3f(0.2,0,0.1)
-    glVertex2d(-1,-1)
-    glColor3f(0,0,1)
-    glVertex2d(1,-1)
-    glColor3f(1,0.2,0)
-    glVertex2d(1,1)
-    glColor3f(1,.5,0)
-    glVertex2d(-1,1)
-    glEnd()
-
-    #BARRA DE REBOTE
+    #----------------------------DIBUJAR AQUI---------------------------------#
     
-    glColor3f(1,1,1) #Colores del rectangulo
-    glRectf(x1,y1,x2,y2) #Coordenadas del rectangulo
+    #DIBUJO DE LAS TEXTURAS
+    draw_fondo()
+    draw_canasta()
+
+    coord_aparicion = 0.0
+    while vidas == 1:
+        nueva_coord =  (float)(random.randint(-1, 1))
+        if(nueva_coord > coord_aparicion+0.1 or nueva_coord < coord_aparicion-0.1 or coord_aparicion == 0.0):
+            coord_aparicion = nueva_coord
+            objetoCae(coord_aparicion)
+            
+
+    
+    
+    #----------------------------------------------------------------------------#
+
     glutSwapBuffers()
 
 def animate():
-    global x1, y1, x2, y2, w, h
-    global flag_left, flag_right, flag_up, flag_down
+    temp = 0
+    #global xc_circle, yc_circle, radius, w, h
 
-    input = 0
+#-------------------------------TIMERS-------------------------------------------#
+def timer_move_canasta(value):
+    global canasta_gameobject, flag_left, flag_right
+    state = canasta_gameobject.get_state()
+    input = {'x': 0, 'y': 0}
+    src_w = w
     if flag_right:
-        input = 1
+        input['x'] = 1
     elif flag_left:
-        input = -1
-    else:
-        input = 0
+        input['x'] = -1
+    canasta_gameobject.move(input, src_w)
 
+    velocity = canasta_gameobject.get_velocity()
 
-    if(input == 0): #no se esta presionando nada
-        x1 = x1
-        x2 = x2
-    elif(input == 1): #Se esta presionando a la derecha
-        print("d")
-        #Derecha
-        if(x2 <= 1):
-            x1 = x1 + velocidad
-            x2 = x2 + velocidad
-        else:
-            x1 = x1
-            x2 = x2
+    glutPostRedisplay()
+    glutTimerFunc(20, timer_move_canasta, 1)
 
-    elif(input == -1): #Se esta presionando a la izquierda
-        print("a")
-        #Izquierda
-        if(x1 >= -1):
-            x1 = x1 - velocidad
-            x2 = x2 - velocidad
-        else:
-            x1 = x1
-            x2 = x2
+def timer_animate_canasta(value):
+    global canasta_gameobject
+    canasta_gameobject.animate()
+    glutPostRedisplay()
+    glutTimerFunc(100, timer_animate_canasta,1)
 
-    #limites para la pantalla
+#--------------------------------------------------------------------------------#
 
-    if(x2 >= 1 and flag_right): #Si llega al borde derecho
-        x2 = 1
-        x1 = 1-largo
-    elif(x1 <= -1 and flag_left): #Si llega al borde izquiferdo
-        x1 = -1
-        x2 = -1+largo
-        
-    
-    if flag_left or flag_right or flag_up or flag_down:
-        glutPostRedisplay()
 
 def main():
-    global w,h, texture_logo, largo, ancho 
+    global texture_canasta, canasta_gameobject, counter_elements
     glutInit (  )
     glutInitDisplayMode ( GLUT_RGBA )
     glutInitWindowSize ( w, h )
-    glutInitWindowPosition(500,50)
+    glutInitWindowPosition(500,0)
     
-    glutCreateWindow( "Jueguito chido" )
+    glutCreateWindow( "BasCLER" )
     glutDisplayFunc (display)
-    glutIdleFunc ( animate )
-    #glutReshapeFunc ( reshape )
+    #glutIdleFunc ( animate )
+    glutReshapeFunc ( reshape )
     glutKeyboardFunc( keyPressed )
     glutKeyboardUpFunc(keyUp)
     init()
 
-    #CARGAR TEXTURAS
-    #texture_fondo.append(loadTexture('Resources/fondo.png'))
-    texture_logo.append(loadTexture('Resources/clerback2.png'))
+    #--------------------------------CARGAR TEXTURAS--------------------------------------#
+    #Canasta
+    texture_canasta.append([loadTexture('Resources/canastabuena.png')])
+    canasta_gameobject = GameObject(counter_elements,190,50,120,100, texture_canasta)
+    counter_elements += 1
+
+    #Balon
+    texture_balon.append(loadTexture(''))
+
+    #Elementos del Fondo
+    texture_fondo.append(loadTexture('Resources/fondo.png'))
+
+
+    timer_move_canasta(0)
+    timer_animate_canasta(0)
 
     glutMainLoop()
 

@@ -12,16 +12,9 @@ from modules.transforms import *
 
 
 #---------------------OBJETOS QUE CAEN------------------------#
-def objetosCaen():
-    vive = 2
-    coord_aparicion = 0.0
-    while vive>=1:
-        nueva_coord =  (float)(random.randint(-1, 1))
-        if(nueva_coord > coord_aparicion+0.1 or nueva_coord < coord_aparicion-0.1):
-            coord_aparicion = nueva_coord
-            draw_objeto(coord_aparicion,0,0.05,32,1,1,1)
-            countdown(3)
-            vive = vive-1
+def objetoCae(coord_aparicion):
+    draw_objeto(coord_aparicion,0,0.05,32,1,1,1)
+    countdown(3)
 
 def countdown(num_of_secs):
     while num_of_secs:
