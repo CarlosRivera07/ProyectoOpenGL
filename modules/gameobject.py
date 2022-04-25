@@ -27,22 +27,6 @@ class GameObject:
         
         self.__position['y'] -= self.__velocity['y'] * 2
 
-        '''#Ver si colisiona con otros elementos
-        for i in range(len(boxes)):
-            box = boxes[i]
-            if box.get_id() != self.__id_element:
-                if self.is_collision(box):
-                    self.__position['x'] -= self.__velocity['x']
-                    self.__velocity['x'] *= -1
-        
-        #Ver si colisiona con la pantalla
-        if self.__position['x'] + self.__size['x'] > scr_w:
-            self.__position['x'] = scr_w - self.__size['x']
-            self.__velocity['x'] *= -1
-        if self.__position['x']  < 0:
-            self.__position['x'] = 0
-            self.__velocity['x'] *= -1'''
-
 
     def move(self, input, src_w):
         #input['x']:
@@ -121,6 +105,3 @@ class GameObject:
     
     def get_velocity(self):
         return self.__velocity
-
-    def is_jumping(self):
-        return self.__jumping

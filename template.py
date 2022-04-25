@@ -7,7 +7,6 @@ from modules.textures import loadTexture
 from modules.bezier import evaluate_bezier
 from modules.gameobject import GameObject
 import random
-#from playsound import playsound #Instalar con pip install playsound==1.2.2
 from threading import Thread
 from movimientoObj import objetoCae
 
@@ -37,8 +36,6 @@ flag_left = False
 flag_right = False
 
 #--------------------------------------------------------------------------#
-
-
 
 #-----------------------------DIBUJOS TEXTURAS-----------------------------#
 #FONDO
@@ -81,7 +78,7 @@ def draw_logo():
     glVertex2d(x_coord,y_coord + height)
     glEnd()
 
-#CANASTA
+#CANASTA - DEGRADADO
 def draw_canasta():
     global canasta_gameobject
     x,y = canasta_gameobject.get_position()
@@ -220,18 +217,12 @@ def display():
     draw_balones()
     draw_bomba()
 
-    glColor3f(1,1,1) #Colores del rectangulo
-    glRectf(0,690,100,700) #Coordenadas del rectangulo
-
     glutSwapBuffers()
 
 #----------------------------------------------------------------------------#
 
-
-
 def animate():
     temp = 0
-    #global xc_circle, yc_circle, radius, w, h
 
 #-------------------------------TIMERS-------------------------------------------#
 def timer_move_canasta(value):
