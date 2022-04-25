@@ -21,6 +21,29 @@ class GameObject:
         self.__size['y'] = h
         self.animator = frames
 
+    def static_move(self, boxes, scr_w):
+        if self.__velocity['y'] == 0:
+            self.__velocity['y'] = 1
+        
+        self.__position['y'] -= self.__velocity['y'] * 2
+
+        '''#Ver si colisiona con otros elementos
+        for i in range(len(boxes)):
+            box = boxes[i]
+            if box.get_id() != self.__id_element:
+                if self.is_collision(box):
+                    self.__position['x'] -= self.__velocity['x']
+                    self.__velocity['x'] *= -1
+        
+        #Ver si colisiona con la pantalla
+        if self.__position['x'] + self.__size['x'] > scr_w:
+            self.__position['x'] = scr_w - self.__size['x']
+            self.__velocity['x'] *= -1
+        if self.__position['x']  < 0:
+            self.__position['x'] = 0
+            self.__velocity['x'] *= -1'''
+
+
     def move(self, input, src_w):
         #input['x']:
         #1.- Mover hacia la derecha
@@ -57,8 +80,8 @@ class GameObject:
     def is_collision(self,obj):
         if not isinstance(obj, GameObject):
             raise Exception('La función requiere un GameObject')
-        col_x = self.__position['x'] < obj.__position['x'] + obj.__size['x'] and self.__position['x'] + self.__size['x'] > obj.__position['x']
-        col_y = self.__position['y'] < obj.__position['y'] + obj.__size['y'] and self.__position['y'] + self.__size['y'] > obj.__position['y']
+        col_x = self.__position['x'] + (self.__size['x'] / 2) - 10 < obj.__position['x'] + obj.__size['x'] and self.__position['x'] + (self.__size['x'] / 2) + 10 > obj.__position['x']
+        col_y = self.__position['y'] + (self.__size['y'] / 4) < obj.__position['y'] + obj.__size['y'] and self.__position['y'] + (self.__size['y'] / 4) > obj.__position['y']
         return col_x and col_y
 
     def change_state(self, index):

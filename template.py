@@ -14,15 +14,17 @@ from movimientoObj import objetoCae
 
 #--------------------DECLARACION DE VARIABLES GLOBALES------------------------#
 
-w,h= 500,750
+w,h= 500,650
 
 vidas = 3
+puntos = 0
 
 #Texturas
 texture_fondo = []
 texture_canasta = []
 texture_balon = []
 texture_bomba = []
+texture_logo = []
 counter_elements = 0
 balones = []
 bombas = []
@@ -59,6 +61,26 @@ def draw_fondo():
     glVertex2d(x_coord,y_coord + height)
     glEnd()
 
+#Logo
+def draw_logo():
+    global texture_logo
+
+    x_coord = 215
+    y_coord = 315
+    width = 75
+    height = 75
+    glBindTexture(GL_TEXTURE_2D, texture_logo[0])
+    glBegin(GL_POLYGON)
+    glTexCoord2f(0,0)
+    glVertex2d(x_coord,y_coord)
+    glTexCoord2f(1,0)
+    glVertex2d(x_coord + width,y_coord)
+    glTexCoord2f(1,1)
+    glVertex2d(x_coord + width,y_coord + height)
+    glTexCoord2f(0,1)
+    glVertex2d(x_coord,y_coord + height)
+    glEnd()
+
 #CANASTA
 def draw_canasta():
     global canasta_gameobject
@@ -68,55 +90,82 @@ def draw_canasta():
     glBindTexture(GL_TEXTURE_2D, canasta_gameobject.get_frame_to_draw())
     glBegin(GL_POLYGON)
     glTexCoord2f(pin_x_start,0)
+    glColor3f(0,0,0)
     glVertex2d(x,y)
     glTexCoord2f(pin_x_end,0)
+    glColor3f(1,0,0)
     glVertex2d(x+w,y)
     glTexCoord2f(pin_x_end,1)
+    glColor3f(1,1,1)
     glVertex2d(x+w,y+h)
     glTexCoord2f(pin_x_start,1)
+    glColor3f(0,0,1)
     glVertex2d(x,y+h)
     glEnd()
 
 #BALON
 def draw_balones():
-    global balones
-    for i in range(len(balones)):
-        balon_gameobject = balones[i]
-        x,y = balon_gameobject.get_position()
-        w,h = balon_gameobject.get_size()
-        pin_x_start, pin_x_end = (0,1)
-        glBindTexture(GL_TEXTURE_2D, texture_balon[0])
-        glBegin(GL_POLYGON)
-        glTexCoord2f(pin_x_start,0)
-        glVertex2d(x,y)
-        glTexCoord2f(pin_x_end,0)
-        glVertex2d(x+w,y)
-        glTexCoord2f(pin_x_end,1)
-        glVertex2d(x+w,y+h)
-        glTexCoord2f(pin_x_start,1)
-        glVertex2d(x,y+h)
-        glEnd()
+    if vidas != 0:
+        global balones
+        for i in range(len(balones)):
+            balon_gameobject = balones[i]
+            x,y = balon_gameobject.get_position()
+            w,h = balon_gameobject.get_size()
+            pin_x_start, pin_x_end = (0,1)
+            glBindTexture(GL_TEXTURE_2D, texture_balon[0])
+            glBegin(GL_POLYGON)
+            glTexCoord2f(pin_x_start,0)
+            glColor3f(1,1,1)
+            glVertex2d(x,y)
+            glTexCoord2f(pin_x_end,0)
+            glColor3f(1,1,1)
+            glVertex2d(x+w,y)
+            glTexCoord2f(pin_x_end,1)
+            glColor3f(1,1,1)
+            glVertex2d(x+w,y+h)
+            glTexCoord2f(pin_x_start,1)
+            glColor3f(1,1,1)
+            glVertex2d(x,y+h)
+            glEnd()
 
 def draw_bomba():
-    global texture_bomba, bombas
-    for i in range(len(bombas)):
-        bomba_gameobject = bombas[i]
-        x,y = bomba_gameobject.get_position()
-        w,h = bomba_gameobject.get_size()
-        pin_x_start, pin_x_end = (0,1)
-        glBindTexture(GL_TEXTURE_2D, texture_bomba[0])
-        glBegin(GL_POLYGON)
-        glTexCoord2f(pin_x_start,0)
-        glVertex2d(x,y)
-        glTexCoord2f(pin_x_end,0)
-        glVertex2d(x+w,y)
-        glTexCoord2f(pin_x_end,1)
-        glVertex2d(x+w,y+h)
-        glTexCoord2f(pin_x_start,1)
-        glVertex2d(x,y+h)
-        glEnd()
+    if vidas != 0:
+        global texture_bomba, bombas
+        for i in range(len(bombas)):
+            bomba_gameobject = bombas[i]
+            x,y = bomba_gameobject.get_position()
+            w,h = bomba_gameobject.get_size()
+            pin_x_start, pin_x_end = (0,1)
+            glBindTexture(GL_TEXTURE_2D, texture_bomba[0])
+            glBegin(GL_POLYGON)
+            glTexCoord2f(pin_x_start,0)
+            glVertex2d(x,y)
+            glTexCoord2f(pin_x_end,0)
+            glVertex2d(x+w,y)
+            glTexCoord2f(pin_x_end,1)
+            glVertex2d(x+w,y+h)
+            glTexCoord2f(pin_x_start,1)
+            glVertex2d(x,y+h)
+            glEnd()
 
 #----------------------------------------------------------------------#
+
+#COLISIONES
+def check_collisions():
+    global bombas, canasta_gameobject, balones, vidas, puntos
+    for i in range(len(bombas)):
+        if canasta_gameobject.is_collision(bombas[i]):
+            if vidas != 0:
+                vidas = vidas-1
+                print("Vidas restantes: "+str(vidas))
+                bombas.pop(i)
+            return
+    for i in range(len(balones)):
+        if canasta_gameobject.is_collision(balones[i]):
+            puntos = puntos+1
+            print("Puntos: "+str(puntos))
+            balones.pop(i)
+            return
 
 #---------------------EVENTOS DEL TECLADO------------------------------#
 
@@ -140,14 +189,10 @@ def keyUp(key, x, y):
 
 
 def init():
-    #glClearColor ( 0.5725, 0.5647, 1.0, 0.0 )
+    glClearColor ( 0.5725, 0.5647, 1.0, 0.0 )
     glEnable(GL_TEXTURE_2D)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-def init2():
-    glClearColor ( 1.0, 0.0, 0.0, 0.0 )
-
 
 def reshape(width, height):
     global w, h
@@ -170,13 +215,18 @@ def display():
     
     #DIBUJO DE LAS TEXTURAS
     draw_fondo()
+    draw_logo()
     draw_canasta()
     draw_balones()
     draw_bomba()
 
+    glColor3f(1,1,1) #Colores del rectangulo
+    glRectf(0,690,100,700) #Coordenadas del rectangulo
+
     glutSwapBuffers()
 
 #----------------------------------------------------------------------------#
+
 
 
 def animate():
@@ -197,6 +247,7 @@ def timer_move_canasta(value):
 
     velocity = canasta_gameobject.get_velocity()
 
+    check_collisions()
     glutPostRedisplay()
     glutTimerFunc(20, timer_move_canasta, 1)
 
@@ -204,6 +255,14 @@ def timer_animate_canasta(value):
     global canasta_gameobject
     glutPostRedisplay()
     glutTimerFunc(100, timer_animate_canasta,1)
+
+def timer_move_balon(id_balon):
+    global balones, w
+    for i in range(len(balones)):
+        if balones[i].get_id() == id_balon:
+            balones[i].static_move(balones,w)
+            glutPostRedisplay()
+            glutTimerFunc(20, timer_move_balon, id_balon)
 
 def timer_animate_balon(id_balon):
     global balones
@@ -216,13 +275,21 @@ def timer_animate_balon(id_balon):
 def timer_create_balon(value):
     global balones, texture_balon, counter_elements
     id_balon = counter_elements
-    balon = GameObject(id_balon,(float)(random.randint(0, 460)),650,40,40, texture_balon)
+    balon = GameObject(id_balon,(float)(random.randint(40, 430)),610,40,40, texture_balon)
     counter_elements += 1
     balones.append(balon)
     #glutPostRedisplay()
     timer_animate_balon(id_balon)
-    glutTimerFunc(1500, timer_create_balon, 1)
+    timer_move_balon(id_balon)
+    glutTimerFunc(1800, timer_create_balon, 1)
 
+def timer_move_bomba(id_bomba):
+    global bombas, w
+    for i in range(len(bombas)):
+        if bombas[i].get_id() == id_bomba:
+            bombas[i].static_move(bombas,w)
+            glutPostRedisplay()
+            glutTimerFunc(20, timer_move_bomba, id_bomba)
 
 def timer_animate_bombas(id_bomba):
     global bombas
@@ -230,15 +297,16 @@ def timer_animate_bombas(id_bomba):
         if bombas[i].get_id() == id_bomba:
             glutPostRedisplay()
             glutTimerFunc(200, timer_animate_bombas, id_bomba)
-
+            
 def timer_create_bombas(value):
     global bombas, texture_bomba, counter_elements
     id_bomba = counter_elements
-    bomba = GameObject(id_bomba,(float)(random.randint(0, 460)),650,40,40, texture_bomba)
+    bomba = GameObject(id_bomba,(float)(random.randint(40, 430)),610,40,40, texture_bomba)
     counter_elements += 1
     bombas.append(bomba)
     #glutPostRedisplay()
     timer_animate_bombas(id_bomba)
+    timer_move_bomba(id_bomba)
     glutTimerFunc(3000, timer_create_bombas, 1)
 
 #--------------------------------------------------------------------------------#
@@ -259,6 +327,8 @@ def main():
     glutKeyboardUpFunc(keyUp)
     init()
 
+    
+
     #--------------------------------CARGAR TEXTURAS--------------------------------------#
     #Canasta
     texture_canasta.append([loadTexture('Resources/canastabuena.png')])
@@ -273,6 +343,7 @@ def main():
 
     #Elementos del Fondo
     texture_fondo.append(loadTexture('Resources/fondo.png'))
+    texture_logo.append(loadTexture('Resources/clerback2.png'))
 
 
     timer_move_canasta(0)
