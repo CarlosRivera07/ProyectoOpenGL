@@ -4,11 +4,9 @@ from OpenGL.GLU import *
 from modules.draw import *
 from modules.transforms import *
 from modules.textures import loadTexture
-from modules.bezier import evaluate_bezier
 from modules.gameobject import GameObject
 import random
 from threading import Thread
-from movimientoObj import objetoCae
 
 
 #--------------------DECLARACION DE VARIABLES GLOBALES------------------------#
@@ -23,10 +21,14 @@ texture_fondo = []
 texture_canasta = []
 texture_balon = []
 texture_bomba = []
+texture_vida_restante = []
+texture_vida_perdida = []
 texture_logo = []
 counter_elements = 0
 balones = []
 bombas = []
+vidas_restante = []
+vidas_perdidas = []
 
 #ELEMENTOS DE LA CANASTA
 canasta_gameobject = GameObject()
@@ -143,7 +145,44 @@ def draw_bomba():
             glVertex2d(x+w,y+h)
             glTexCoord2f(pin_x_start,1)
             glVertex2d(x,y+h)
+            
             glEnd()
+
+def draw_vidas_restantes(x,y):
+    global counter_elements, vidas, texture_vida_restante
+    if vidas != 0:
+        width = 30
+        height = 30
+        glBindTexture(GL_TEXTURE_2D, texture_vida_restante[0])
+        glBegin(GL_POLYGON)
+        glTexCoord2f(0,0)
+        glVertex2d(x,y)
+        glTexCoord2f(1,0)
+        glVertex2d(x + width,y)
+        glTexCoord2f(1,1)
+        glVertex2d(x + width,y + height)
+        glTexCoord2f(0,1)
+        glVertex2d(x,y + height)
+
+        glEnd()
+
+def draw_vida_perdida(x,y):
+    global counter_elements, vidas, texture_vida_perdida
+    if vidas != 0:
+        width = 30
+        height = 30
+        glBindTexture(GL_TEXTURE_2D, texture_vida_perdida[0])
+        glBegin(GL_POLYGON)
+        glTexCoord2f(0,0)
+        glVertex2d(x,y)
+        glTexCoord2f(1,0)
+        glVertex2d(x + width,y)
+        glTexCoord2f(1,1)
+        glVertex2d(x + width,y + height)
+        glTexCoord2f(0,1)
+        glVertex2d(x,y + height)
+
+        glEnd()
 
 #----------------------------------------------------------------------#
 
@@ -156,6 +195,7 @@ def check_collisions():
                 vidas = vidas-1
                 print("Vidas restantes: "+str(vidas))
                 bombas.pop(i)
+
             return
     for i in range(len(balones)):
         if canasta_gameobject.is_collision(balones[i]):
@@ -216,6 +256,23 @@ def display():
     draw_canasta()
     draw_balones()
     draw_bomba()
+    #ANIMACION DEL CONTEO DE VIDAS
+    if vidas == 3:
+        draw_vidas_restantes(10, 610)
+        draw_vidas_restantes(50, 610)
+        draw_vidas_restantes(90, 610)
+    elif vidas == 2:
+        draw_vidas_restantes(10, 610)
+        draw_vidas_restantes(50, 610)
+        draw_vida_perdida(90, 610)
+    elif vidas == 1:
+        draw_vidas_restantes(10, 610)
+        draw_vida_perdida(50, 610)
+        draw_vida_perdida(90, 610)
+    elif vidas == 0:
+        draw_vida_perdida(10, 610)
+        draw_vida_perdida(50, 610)
+        draw_vida_perdida(90, 610)
 
     glutSwapBuffers()
 
@@ -253,7 +310,12 @@ def timer_move_balon(id_balon):
         if balones[i].get_id() == id_balon:
             balones[i].static_move(balones,w)
             glutPostRedisplay()
-            glutTimerFunc(20, timer_move_balon, id_balon)
+            if puntos == 0 or puntos < 10:
+                glutTimerFunc(20, timer_move_balon, id_balon)
+            elif puntos >= 10 and puntos < 20:
+                glutTimerFunc(15, timer_move_balon, id_balon)
+            elif puntos >= 20:
+                glutTimerFunc(10, timer_move_balon, id_balon)
 
 def timer_animate_balon(id_balon):
     global balones
@@ -264,7 +326,7 @@ def timer_animate_balon(id_balon):
             glutTimerFunc(200, timer_animate_balon, id_balon)
 
 def timer_create_balon(value):
-    global balones, texture_balon, counter_elements
+    global balones, texture_balon, counter_elements, puntos
     id_balon = counter_elements
     balon = GameObject(id_balon,(float)(random.randint(40, 430)),610,40,40, texture_balon)
     counter_elements += 1
@@ -272,7 +334,12 @@ def timer_create_balon(value):
     #glutPostRedisplay()
     timer_animate_balon(id_balon)
     timer_move_balon(id_balon)
-    glutTimerFunc(1800, timer_create_balon, 1)
+    if puntos == 0 or puntos < 10:
+        glutTimerFunc(1800, timer_create_balon, 1)
+    elif puntos >= 10 and puntos < 20:
+        glutTimerFunc(1300, timer_create_balon, 1)
+    elif puntos >= 20:
+        glutTimerFunc(800, timer_create_balon, 1)
 
 def timer_move_bomba(id_bomba):
     global bombas, w
@@ -280,7 +347,12 @@ def timer_move_bomba(id_bomba):
         if bombas[i].get_id() == id_bomba:
             bombas[i].static_move(bombas,w)
             glutPostRedisplay()
-            glutTimerFunc(20, timer_move_bomba, id_bomba)
+            if puntos == 0 or puntos < 10:
+                glutTimerFunc(17, timer_move_bomba, id_bomba)
+            elif puntos >= 10 and puntos < 20:
+                glutTimerFunc(12, timer_move_bomba, id_bomba)
+            elif puntos >= 20:
+                glutTimerFunc(8, timer_move_bomba, id_bomba)
 
 def timer_animate_bombas(id_bomba):
     global bombas
@@ -298,7 +370,12 @@ def timer_create_bombas(value):
     #glutPostRedisplay()
     timer_animate_bombas(id_bomba)
     timer_move_bomba(id_bomba)
-    glutTimerFunc(3000, timer_create_bombas, 1)
+    if puntos == 0 or puntos < 10:
+        glutTimerFunc(3000, timer_create_bombas, 1)
+    elif puntos >= 10 and puntos < 20:
+        glutTimerFunc(2000, timer_create_bombas, 1)
+    elif puntos >= 20:
+        glutTimerFunc(1000, timer_create_bombas, 1)
 
 #--------------------------------------------------------------------------------#
 
@@ -335,6 +412,10 @@ def main():
     #Elementos del Fondo
     texture_fondo.append(loadTexture('Resources/fondo.png'))
     texture_logo.append(loadTexture('Resources/clerback2.png'))
+
+    #Corazon de las vidas
+    texture_vida_perdida.append(loadTexture('Resources/cora_roto.png'))
+    texture_vida_restante.append(loadTexture('Resources/cora.png'))
 
 
     timer_move_canasta(0)
